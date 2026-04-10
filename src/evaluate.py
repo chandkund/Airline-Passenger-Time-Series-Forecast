@@ -1,5 +1,6 @@
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 import numpy as np
+import os
 
 
 def evaluate_forecast(df, model, forecast):
@@ -12,9 +13,14 @@ def evaluate_forecast(df, model, forecast):
     mape = np.mean(np.abs((actual - fitted) / actual)) * 100
 
     metrics = {"MAE": mae, "RMSE": rmse, "MAPE": mape}
+
+    # Ensure the output directory exists
+    os.makedirs("outputs/results", exist_ok=True)
+
     with open("outputs/results/metrics.txt", "w", encoding="utf-8") as fout:
         fout.write("MAE: {:.4f}\n".format(mae))
         fout.write("RMSE: {:.4f}\n".format(rmse))
         fout.write("MAPE: {:.2f}%\n".format(mape))
 
     return metrics
+
