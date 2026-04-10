@@ -1,10 +1,14 @@
 # Time Series Forecasting using ARIMA and Streamlit
 
+**GitHub Repository:** [https://github.com/chandkund/Airline-Passenger-Time-Series-Forecast](https://github.com/chandkund/Airline-Passenger-Time-Series-Forecast)
+
+**Live Demo:** [https://chandkund-airline-passenger-time-series-fo-streamlit-app-f4njja.streamlit.app/](https://chandkund-airline-passenger-time-series-fo-streamlit-app-f4njja.streamlit.app/)
+
 ## Project Overview
-This project is a simple and practical **Time Series Forecasting** application built using **Python**, **ARIMA model**, and **Streamlit**.  
+This project is a simple and practical **Time Series Forecasting** application built using **Python**, **ARIMA model**, and **Streamlit**.
 It is designed to forecast future values based on historical time series data.
 
-The project uses the **Airline Passengers dataset**, which contains monthly passenger counts over time.  
+The project uses the **Airline Passengers dataset**, which contains monthly passenger counts over time.
 The main goal is to analyze the data, understand trend and seasonality, train a forecasting model, and predict future passenger values.
 
 This project is made as a **beginner-friendly machine learning project** with proper structure and a simple deployment using **Streamlit**.
