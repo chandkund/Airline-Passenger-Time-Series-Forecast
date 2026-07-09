@@ -1,12 +1,7 @@
-import base64
-import io
+import json
 import os
 import sys
 
-import matplotlib
-
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
 from flask import Flask, render_template_string, request
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -26,13 +21,14 @@ PAGE_TEMPLATE = """
 <meta charset="utf-8">
 <title>Airline Passenger Time Series Forecast</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <style>
   body { font-family: -apple-system, Segoe UI, Roboto, sans-serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; color: #1a1a1a; }
   h1 { font-size: 1.6rem; }
   .subtitle { color: #555; margin-bottom: 1.5rem; }
   .controls { margin: 1.5rem 0; }
   .controls label { font-weight: 600; margin-right: 0.5rem; }
-  img { max-width: 100%; border: 1px solid #ddd; border-radius: 6px; }
+  canvas { max-width: 100%; border: 1px solid #ddd; border-radius: 6px; padding: 1rem; box-sizing: border-box; }
   table { border-collapse: collapse; width: 100%; margin-top: 1rem; }
   th, td { text-align: left; padding: 0.4rem 0.8rem; border-bottom: 1px solid #eee; }
   .metrics { display: flex; gap: 1.5rem; margin-top: 1rem; flex-wrap: wrap; }
@@ -54,7 +50,7 @@ PAGE_TEMPLATE = """
     <button type="submit">Update</button>
   </form>
 
-  <img src="data:image/png;base64,{{ chart_b64 }}" alt="Forecast chart">
+  <canvas id="forecastChart" height="100"></canvas>
 
   <h2>Evaluation Metrics</h2>
   <div class="metrics">{{ metric_cards | safe }}</div>
@@ -66,6 +62,27 @@ PAGE_TEMPLATE = """
       <tbody>{{ forecast_rows | safe }}</tbody>
     </table>
   </details>
+
+  <script>
+    const labels = {{ labels | safe }};
+    const actual = {{ actual_values | safe }};
+    const forecast = {{ forecast_values | safe }};
+
+    new Chart(document.getElementById('forecastChart'), {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [
+          { label: 'Actual', data: actual, borderColor: '#2563eb', spanGaps: true, tension: 0.15 },
+          { label: 'Forecast', data: forecast, borderColor: '#f97316', spanGaps: true, tension: 0.15 }
+        ]
+      },
+      options: {
+        responsive: true,
+        scales: { y: { title: { display: true, text: 'Passengers' } } }
+      }
+    });
+  </script>
 </body>
 </html>
 """
@@ -82,19 +99,12 @@ def index():
     forecast = generate_forecast(model, processed, periods=periods)
     metrics = evaluate_forecast(processed, model, forecast)
 
-    fig, ax = plt.subplots(figsize=(10, 5))
-    ax.plot(processed.index, processed["Passengers"], label="Actual", marker="o")
-    ax.plot(forecast.index, forecast, label="Forecast", marker="o")
-    ax.set_xlabel("Month")
-    ax.set_ylabel("Passengers")
-    ax.set_title("Airline Passenger Forecast")
-    ax.legend()
-    ax.grid(True)
+    actual_labels = [idx.strftime("%Y-%m") for idx in processed.index]
+    forecast_labels = [idx.strftime("%Y-%m") for idx in forecast.index]
+    labels = actual_labels + forecast_labels
 
-    buf = io.BytesIO()
-    fig.savefig(buf, format="png", bbox_inches="tight")
-    plt.close(fig)
-    chart_b64 = base64.b64encode(buf.getvalue()).decode("utf-8")
+    actual_values = list(processed["Passengers"]) + [None] * len(forecast_labels)
+    forecast_values = [None] * (len(actual_labels) - 1) + [float(processed["Passengers"].iloc[-1])] + list(forecast)
 
     forecast_rows = "".join(
         f"<tr><td>{idx.strftime('%Y-%m')}</td><td>{value:.1f}</td></tr>"
@@ -109,7 +119,9 @@ def index():
     return render_template_string(
         PAGE_TEMPLATE,
         periods=periods,
-        chart_b64=chart_b64,
+        labels=json.dumps(labels),
+        actual_values=json.dumps(actual_values),
+        forecast_values=json.dumps(forecast_values),
         forecast_rows=forecast_rows,
         metric_cards=metric_cards,
     )
