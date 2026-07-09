@@ -1,4 +1,3 @@
-from sklearn.metrics import mean_absolute_error, mean_squared_error
 import numpy as np
 import os
 
@@ -8,8 +7,8 @@ def evaluate_forecast(df, model, forecast):
     fitted = model.fittedvalues
     actual = df["Passengers"]
 
-    mae = mean_absolute_error(actual, fitted)
-    rmse = np.sqrt(mean_squared_error(actual, fitted))
+    mae = np.mean(np.abs(actual - fitted))
+    rmse = np.sqrt(np.mean((actual - fitted) ** 2))
     mape = np.mean(np.abs((actual - fitted) / actual)) * 100
 
     metrics = {"MAE": mae, "RMSE": rmse, "MAPE": mape}
