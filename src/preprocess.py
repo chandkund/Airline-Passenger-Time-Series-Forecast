@@ -11,5 +11,8 @@ def preprocess_data(df):
     df = df.set_index("Month")
     df = df.asfreq("MS")
     df = df.ffill()
-    df.to_csv("data/processed/cleaned_airline_passengers.csv")
+    try:
+        df.to_csv("data/processed/cleaned_airline_passengers.csv")
+    except OSError:
+        pass
     return df

@@ -14,13 +14,14 @@ def evaluate_forecast(df, model, forecast):
 
     metrics = {"MAE": mae, "RMSE": rmse, "MAPE": mape}
 
-    # Ensure the output directory exists
-    os.makedirs("outputs/results", exist_ok=True)
-
-    with open("outputs/results/metrics.txt", "w", encoding="utf-8") as fout:
-        fout.write("MAE: {:.4f}\n".format(mae))
-        fout.write("RMSE: {:.4f}\n".format(rmse))
-        fout.write("MAPE: {:.2f}%\n".format(mape))
+    try:
+        os.makedirs("outputs/results", exist_ok=True)
+        with open("outputs/results/metrics.txt", "w", encoding="utf-8") as fout:
+            fout.write("MAE: {:.4f}\n".format(mae))
+            fout.write("RMSE: {:.4f}\n".format(rmse))
+            fout.write("MAPE: {:.2f}%\n".format(mape))
+    except OSError:
+        pass
 
     return metrics
 
